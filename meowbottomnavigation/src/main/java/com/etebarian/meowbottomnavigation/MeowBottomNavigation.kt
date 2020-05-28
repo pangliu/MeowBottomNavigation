@@ -34,7 +34,8 @@ class MeowBottomNavigation : FrameLayout {
     var models = ArrayList<Model>()
     var cells = ArrayList<MeowBottomNavigationCell>()
     var subItems = ArrayList<ItemView>()
-//        private set
+
+    //        private set
     private var callListenerWhenIsSelected = false
 
     private var selectedId = -1
@@ -49,9 +50,10 @@ class MeowBottomNavigation : FrameLayout {
     /**
      * 增加 cell 的 clickListener
      */
-    interface CellOnClickListener{
+    interface CellOnClickListener {
         fun cellOnClickListener(id: Int)
     }
+
     private var onCellClickListener: CellOnClickListener? = null
 
     var defaultIconColor = Color.parseColor("#757575")
@@ -202,27 +204,20 @@ class MeowBottomNavigation : FrameLayout {
                 }
             }
             var index = 0
-            for (item in model.subList){
+            for (item in model.subList) {
                 var subCell = ItemView(context)
                 // TODO 加入 cell's item
                 subCell.let {
                     it.tag = "Nav$index"
                     it.id = item.id
-//                    it.resource = item.icon
                     it.setResource(item.icon)
-//                    Log.d("msg", "set click: " + it.id)
-                    /**
-                     * ConstraintLayout 要指定裡面的元件才能設定 onClickListener
-                     * 不然會無法點擊
-                     */
-//                    it.btn_item.setOnClickListener {
-//
-//                        Log.d("msg", "setOnClick: ${it.id}")
-//                        onCellClickListener?.cellOnClickListener(it.id)
-//                    }
                 }
+                /**
+                 * ConstraintLayout 要指定裡面的元件才能設定 onClickListener
+                 * 不然會無法點擊
+                 */
                 subCell.btn_item.setOnClickListener {
-                    Log.d("msg", "setOnClick: ${item.id}")
+//                    Log.d("msg", "setOnClick: ${item.id}")
                     onCellClickListener?.cellOnClickListener(item.id)
                 }
                 val d = GradientDrawable()
@@ -308,7 +303,6 @@ class MeowBottomNavigation : FrameLayout {
     }
 
     fun show(id: Int, enableAnimation: Boolean = true) {
-        Log.d("msg", "show")
         for (i in models.indices) {
             val model = models[i]
             val cell = cells[i]
@@ -350,8 +344,8 @@ class MeowBottomNavigation : FrameLayout {
 
     // 找 subItem
     fun getSubItemById(id: Int): ItemView? {
-        for(index in subItems) {
-            if(index.id == id)
+        for (index in subItems) {
+            if (index.id == id)
                 return index
         }
         return null
@@ -399,19 +393,12 @@ class MeowBottomNavigation : FrameLayout {
     /**
      * 加入 set subitem badgeDrawable 接口
      */
-    fun setSubItemBadgeDraw(navId: Int, subId: Int) {
-        val model = getModelById(navId) ?: return
-        val pos = getModelPosition(navId)
-//        model.count = count
-//        cells[pos].count = count
-//        model.subList.get(subId)
+    fun setSubItemBadgeDraw(subId: Int, count: String) {
         val itemView = getSubItemById(subId) ?: return
-        itemView.showBadgeDrawable()
+        itemView.count = count
     }
 
     class Model(var id: Int, var icon: Int, var subList: ArrayList<Model> = ArrayList()) {
-
         var count: String = MeowBottomNavigationCell.EMPTY_VALUE
-
     }
 }

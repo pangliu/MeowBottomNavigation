@@ -37,7 +37,7 @@
             android:layout_gravity="bottom"
             app:mbn_circleColor="#ffffff"
             app:mbn_backgroundBottomColor="#ffffff"
-            app:mbn_countBackgroundColor="#ff6f00"
+            app:mbn_countBackgroundColor="#ff0000"
             app:mbn_countTextColor="#ffffff"
             app:mbn_countTypeface="fonts/SourceSansPro-Regular.ttf"
             app:mbn_defaultIconColor="#90a4ae"

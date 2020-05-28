@@ -170,7 +170,7 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
             val m = dip(context, 24)
             v_circle.x = (1f - progress) * (if (isFromLeft) -m else m) + ((measuredWidth - dip(context, 48)) / 2f)
 //            v_circle.y = (1f - progress) * measuredHeight + dip(context, 6)
-            Log.e("Ian","[progress] progress:$progress, mViewHeight:$mViewHeight, mBaseBlockHeight:$mBaseBlockHeight, iv.y:${iv.y}, dip(context, 3):${dip(context, 3)}")
+//            Log.e("Ian","[progress] progress:$progress, mViewHeight:$mViewHeight, mBaseBlockHeight:$mBaseBlockHeight, iv.y:${iv.y}, dip(context, 3):${dip(context, 3)}")
             v_circle.y = (1f - progress) * measuredHeight + mViewHeight - mBaseBlockHeight + dip(context, 3)
         }
 
@@ -178,7 +178,7 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
         set(value) {
             field = value
             var nextY = v_circle.y - mButtonSpacing
-            for(i in 0 until mSubItemList.size ){
+            for (i in 0 until mSubItemList.size) {
 
                 val d = GradientDrawable()
                 d.setColor(circleColor)
@@ -217,7 +217,7 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
         set(value) {
             field = value
             iv?.setOnClickListener {
-                Log.e("Ian","iv OnClickListener")
+//                Log.e("Ian","iv OnClickListener")
                 onClickListener()
 //                if (right_labels.isExpanded) right_labels.collapse() else right_labels.expand()
             }
@@ -252,7 +252,7 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
     private fun initializeView() {
         allowDraw = true
         containerView = LayoutInflater.from(context).inflate(R.layout.meow_navigation_cell, this)
-        mButtonSpacing = dip(context,10)
+        mButtonSpacing = dip(context, 10)
         draw()
     }
 
@@ -278,9 +278,9 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
         var height = 0
         mViewWidth = 0
 
-        measureChildren(widthMeasureSpec,heightMeasureSpec)
+        measureChildren(widthMeasureSpec, heightMeasureSpec)
 
-        for (i in 0..childCount){
+        for (i in 0..childCount) {
             var child = getChildAt(i)
 //            try {
 //                Log.e("Ian","[onLayout] index:$i, tag:${child.tag}, childCount:$childCount")
@@ -289,9 +289,9 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
 //            }
 
             child?.let {
-                if(it.tag != "v_circle")
+                if (it.tag != "v_circle")
                     height += it.measuredHeight
-                if(it.tag == "FrameLayout")
+                if (it.tag == "FrameLayout")
                     mBaseBlockHeight = it.height
 
                 mViewWidth = max(mViewWidth, it.measuredWidth)
@@ -300,7 +300,7 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
 
         mViewHeight = (height * 1.4f).toInt()
 
-        setMeasuredDimension(widthMeasureSpec,mViewHeight)
+        setMeasuredDimension(widthMeasureSpec, mViewHeight)
 
     }
 
@@ -330,7 +330,7 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
                 else
                     1f - f
             }
-            addListener(object :Animator.AnimatorListener{
+            addListener(object : Animator.AnimatorListener {
                 override fun onAnimationRepeat(animation: Animator?) {
                 }
 
@@ -349,8 +349,8 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
         }
     }
 
-    private fun animateSubProgress(enableCell: Boolean){
-        Log.i("Ian","[animateSubProgress] call. enableCell:$enableCell")
+    private fun animateSubProgress(enableCell: Boolean) {
+//        Log.i("Ian","[animateSubProgress] call. enableCell:$enableCell")
         val d = if (enableCell) duration else 250
         val anim = ValueAnimator.ofFloat(0f, 1f)
         anim.apply {
@@ -372,20 +372,20 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         super.onLayout(changed, l, t, r, b)
 
-        var buttonsHorizontalCenter = measuredWidth/2
+        var buttonsHorizontalCenter = measuredWidth / 2
 
         var nextY = mViewHeight - mBaseBlockHeight - mButtonSpacing
 
-        for (i in 0..childCount){
+        for (i in 0..childCount) {
             var child = getChildAt(i)
-            try {
-                Log.e("Ian","[onLayout] index:$i, tag:${child.tag}, childCount:$childCount")
-            }catch (e: Exception){
-                Log.e("Ian","[onLayout] Exception:$e")
-            }
+//            try {
+//                Log.e("Ian","[onLayout] index:$i, tag:${child.tag}, childCount:$childCount")
+//            }catch (e: Exception){
+//                Log.e("Ian","[onLayout] Exception:$e")
+//            }
 
             child?.let {
-                Log.e("Ian","[onLayout] index:$i, tag:${child.tag}, childCount:$childCount, measuredWidth:${it.measuredWidth}, measuredHeight:${it.measuredHeight}, mViewWidth:$mViewWidth, buttonsHorizontalCenter:$buttonsHorizontalCenter" )
+//                Log.e("Ian","[onLayout] index:$i, tag:${child.tag}, childCount:$childCount, measuredWidth:${it.measuredWidth}, measuredHeight:${it.measuredHeight}, mViewWidth:$mViewWidth, buttonsHorizontalCenter:$buttonsHorizontalCenter" )
 //                if(it.tag.toString().contains("FrameLayout")){
 //                    var childX = buttonsHorizontalCenter - it.measuredWidth/2
 //                    var childY = (nextY - it.measuredHeight)
@@ -393,11 +393,11 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
 //                    Log.e("Ian","[layoutPosition] left:$childX, top:$childY, right:${childX+it.measuredWidth}, bottom:${childY+it.measuredHeight}")
 //                    nextY = (childY - mButtonSpacing)
 //                }
-                if(it.tag.toString().contains("Nav")){
-                    var childX = buttonsHorizontalCenter - it.measuredWidth/2
+                if (it.tag.toString().contains("Nav")) {
+                    var childX = buttonsHorizontalCenter - it.measuredWidth / 2
                     var childY = (nextY - it.measuredHeight).toInt()
-                    it.layout(childX,childY,childX+it.measuredWidth,childY+it.measuredHeight)
-                    Log.e("Ian","[layoutPosition] left:$childX, top:$childY, right:${childX+it.measuredWidth}, bottom:${childY+it.measuredHeight}")
+                    it.layout(childX, childY, childX + it.measuredWidth, childY + it.measuredHeight)
+//                    Log.e("Ian","[layoutPosition] left:$childX, top:$childY, right:${childX+it.measuredWidth}, bottom:${childY+it.measuredHeight}")
                     val collapsedTranslation: Float = fl.y - childY.toFloat()
                     val expandedTranslation = 0f
 //                    it.translationY = if (mExpanded) expandedTranslation else collapsedTranslation
@@ -409,7 +409,7 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
 //                    params.mExpandDir.setFloatValues(collapsedTranslation, expandedTranslation)
 //                    it.layoutParams = params
 //                    params.setAnimationsTarget(it)
-                    if(!mSubItemList.contains(it))
+                    if (!mSubItemList.contains(it))
                         mSubItemList.add(it)
 
                     nextY = (childY - mButtonSpacing)
@@ -465,8 +465,8 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
             mExpandAlpha.setFloatValues(0f, 1f)
 //            when (mExpandDirection) {
 //                FloatingActionsMenu.EXPAND_UP, FloatingActionsMenu.EXPAND_DOWN -> {
-                    mCollapseDir.setProperty(View.TRANSLATION_Y)
-                    mExpandDir.setProperty(View.TRANSLATION_Y)
+            mCollapseDir.setProperty(View.TRANSLATION_Y)
+            mExpandDir.setProperty(View.TRANSLATION_Y)
 //                }
 //                FloatingActionsMenu.EXPAND_LEFT, FloatingActionsMenu.EXPAND_RIGHT -> {
 //                    mCollapseDir.setProperty(View.TRANSLATION_X)
