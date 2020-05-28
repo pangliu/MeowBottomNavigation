@@ -6,13 +6,20 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.util.AttributeSet
 import android.util.LayoutDirection
+import android.util.Log
 import android.view.Gravity
+import android.view.View
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import androidx.core.view.ViewCompat
+import androidx.core.view.marginBottom
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import kotlinx.android.synthetic.main.item_cell_view.view.*
+import kotlinx.android.synthetic.main.meow_navigation_cell.view.*
 import kotlin.math.abs
 
 /**
@@ -26,7 +33,8 @@ class MeowBottomNavigation : FrameLayout {
 
     var models = ArrayList<Model>()
     var cells = ArrayList<MeowBottomNavigationCell>()
-        private set
+    var subItems = ArrayList<ItemView>()
+//        private set
     private var callListenerWhenIsSelected = false
 
     private var selectedId = -1
@@ -37,6 +45,14 @@ class MeowBottomNavigation : FrameLayout {
 
     private var heightCell = 0
     private var isAnimating = false
+
+    /**
+     * 增加 cell 的 clickListener
+     */
+    interface CellOnClickListener{
+        fun cellOnClickListener(id: Int)
+    }
+    private var onCellClickListener: CellOnClickListener? = null
 
     var defaultIconColor = Color.parseColor("#757575")
         set(value) {
@@ -125,17 +141,20 @@ class MeowBottomNavigation : FrameLayout {
     private fun initializeViews() {
         ll_cells = LinearLayout(context)
         ll_cells.apply {
-            val params = LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, heightCell)
+            val params = LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
             params.gravity = Gravity.BOTTOM
             layoutParams = params
             orientation = LinearLayout.HORIZONTAL
             clipChildren = false
             clipToPadding = false
+
         }
 
         bezierView = BezierView(context)
         bezierView.apply {
-            layoutParams = LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, heightCell)
+            val params = LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, heightCell)
+            params.gravity = Gravity.BOTTOM
+            layoutParams = params
             color = backgroundBottomColor
             shadowColor = this@MeowBottomNavigation.shadowColor
         }
@@ -158,7 +177,8 @@ class MeowBottomNavigation : FrameLayout {
     fun add(model: Model) {
         val cell = MeowBottomNavigationCell(context)
         cell.apply {
-            val params = LinearLayout.LayoutParams(0, heightCell, 1f)
+            val params = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            params.gravity = Gravity.BOTTOM
             layoutParams = params
             icon = model.icon
             count = model.count
@@ -180,6 +200,38 @@ class MeowBottomNavigation : FrameLayout {
                     if (callListenerWhenIsSelected)
                         onClickedListener(model)
                 }
+            }
+            var index = 0
+            for (item in model.subList){
+                var subCell = ItemView(context)
+                // TODO 加入 cell's item
+                subCell.let {
+                    it.tag = "Nav$index"
+                    it.id = item.id
+//                    it.resource = item.icon
+                    it.setResource(item.icon)
+//                    Log.d("msg", "set click: " + it.id)
+                    /**
+                     * ConstraintLayout 要指定裡面的元件才能設定 onClickListener
+                     * 不然會無法點擊
+                     */
+//                    it.btn_item.setOnClickListener {
+//
+//                        Log.d("msg", "setOnClick: ${it.id}")
+//                        onCellClickListener?.cellOnClickListener(it.id)
+//                    }
+                }
+                subCell.btn_item.setOnClickListener {
+                    Log.d("msg", "setOnClick: ${item.id}")
+                    onCellClickListener?.cellOnClickListener(item.id)
+                }
+                val d = GradientDrawable()
+                d.setColor(circleColor)
+                d.shape = GradientDrawable.OVAL
+                ViewCompat.setBackground(subCell, d)
+                addView(subCell)
+                subItems.add(subCell)
+                index++
             }
             disableCell()
             ll_cells.addView(this)
@@ -256,6 +308,7 @@ class MeowBottomNavigation : FrameLayout {
     }
 
     fun show(id: Int, enableAnimation: Boolean = true) {
+        Log.d("msg", "show")
         for (i in models.indices) {
             val model = models[i]
             val cell = cells[i]
@@ -295,6 +348,15 @@ class MeowBottomNavigation : FrameLayout {
         return -1
     }
 
+    // 找 subItem
+    fun getSubItemById(id: Int): ItemView? {
+        for(index in subItems) {
+            if(index.id == id)
+                return index
+        }
+        return null
+    }
+
     fun setCount(id: Int, count: String) {
         val model = getModelById(id) ?: return
         val pos = getModelPosition(id)
@@ -327,7 +389,27 @@ class MeowBottomNavigation : FrameLayout {
         onReselectListener = listener
     }
 
-    class Model(var id: Int, var icon: Int) {
+    /**
+     * 加入 subitem listener 的接口
+     */
+    fun setCellOnClickListener(listener: CellOnClickListener) {
+        onCellClickListener = listener
+    }
+
+    /**
+     * 加入 set subitem badgeDrawable 接口
+     */
+    fun setSubItemBadgeDraw(navId: Int, subId: Int) {
+        val model = getModelById(navId) ?: return
+        val pos = getModelPosition(navId)
+//        model.count = count
+//        cells[pos].count = count
+//        model.subList.get(subId)
+        val itemView = getSubItemById(subId) ?: return
+        itemView.showBadgeDrawable()
+    }
+
+    class Model(var id: Int, var icon: Int, var subList: ArrayList<Model> = ArrayList()) {
 
         var count: String = MeowBottomNavigationCell.EMPTY_VALUE
 

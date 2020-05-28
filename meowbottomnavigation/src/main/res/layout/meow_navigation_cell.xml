@@ -1,21 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:tag="merge">
 
     <View
         android:id="@+id/v_circle"
         android:layout_width="48dp"
-        android:layout_height="48dp" />
+        android:layout_height="48dp"
+        android:tag="v_circle"/>
 
     <FrameLayout
         android:id="@+id/fl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
+        android:layout_centerInParent="true"
+        android:layout_alignParentBottom="true"
         android:elevation="6dp"
         android:padding="8dp"
-        tools:targetApi="lollipop">
+        tools:targetApi="lollipop"
+        android:tag="FrameLayout">
 
         <com.etebarian.meowbottomnavigation.CellImageView
             android:id="@+id/iv"
@@ -23,7 +27,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:padding="10dp"
-            app:meow_imageview_size="24dp" />
+            app:meow_imageview_size="20dp"
+            android:tag="iv"/>
 
         <TextView
             android:id="@+id/tv_count"
@@ -36,7 +41,8 @@
             android:textDirection="ltr"
             android:minWidth="16dp"
             android:textSize="8dp"
-            tools:ignore="RtlHardcoded,SpUsage" />
+            tools:ignore="RtlHardcoded,SpUsage"
+            android:tag="tv_count"/>
 
     </FrameLayout>
 

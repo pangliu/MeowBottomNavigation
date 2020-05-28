@@ -1,6 +1,7 @@
 package com.etebarian.meowbottomnavigation
 
-import android.animation.ValueAnimator
+import android.animation.*
+import android.annotation.TargetApi
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -9,13 +10,22 @@ import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
 import android.os.Build
 import android.util.AttributeSet
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import android.view.animation.DecelerateInterpolator
+import android.view.animation.Interpolator
+import android.view.animation.OvershootInterpolator
 import android.widget.RelativeLayout
+import androidx.annotation.RequiresApi
 import androidx.core.view.ViewCompat
+import androidx.interpolator.view.animation.FastOutLinearInInterpolator
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+//import com.getbase.floatingactionbutton.FloatingActionsMenu
 import kotlinx.android.extensions.LayoutContainer
 import kotlinx.android.synthetic.main.meow_navigation_cell.view.*
+import kotlin.math.max
 
 /**
  * Created by 1HE on 2/23/2019.
@@ -26,7 +36,24 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
 
     companion object {
         const val EMPTY_VALUE = "empty"
+
+        private val sExpandInterpolator: Interpolator = OvershootInterpolator()
+        private val sCollapseInterpolator: Interpolator = DecelerateInterpolator(3f)
+        private val sAlphaExpandInterpolator: Interpolator = DecelerateInterpolator()
+
+        private val ANIMATION_DURATION = 300
+
+        private val mExpandAnimation = AnimatorSet().setDuration(ANIMATION_DURATION.toLong())
+        private val mCollapseAnimation = AnimatorSet().setDuration(ANIMATION_DURATION.toLong())
     }
+
+    private var mViewCount: Int = 0
+    private var mBaseBlockHeight: Int = 0
+    private var mViewHeight: Int = 0
+    private var mViewWidth: Int = 0
+    private var mButtonSpacing: Int = 0
+    private var mExpanded = false
+    private var mSubItemList = arrayListOf<View>()
 
     var defaultIconColor = 0
         set(value) {
@@ -119,10 +146,13 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
 
     var isFromLeft = false
     var duration = 0L
+
+    //由該變數控制動畫進度
     private var progress = 0f
         set(value) {
             field = value
-            fl.y = (1f - progress) * dip(context, 18) + dip(context, -2)
+//            fl.y = (1f - progress) * dip(context, 6) + dip(context, -2)
+            fl.y = (1f - progress) * mBaseBlockHeight * 0.2f + (mViewHeight - mBaseBlockHeight) + dip(context, -6)
 
             iv.color = if (progress == 1f) selectedIconColor else defaultIconColor
             val scale = (1f - progress) * (-0.2f) + 1f
@@ -139,7 +169,30 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
 
             val m = dip(context, 24)
             v_circle.x = (1f - progress) * (if (isFromLeft) -m else m) + ((measuredWidth - dip(context, 48)) / 2f)
-            v_circle.y = (1f - progress) * measuredHeight + dip(context, 6)
+//            v_circle.y = (1f - progress) * measuredHeight + dip(context, 6)
+            Log.e("Ian","[progress] progress:$progress, mViewHeight:$mViewHeight, mBaseBlockHeight:$mBaseBlockHeight, iv.y:${iv.y}, dip(context, 3):${dip(context, 3)}")
+            v_circle.y = (1f - progress) * measuredHeight + mViewHeight - mBaseBlockHeight + dip(context, 3)
+        }
+
+    private var subProgress = 0f
+        set(value) {
+            field = value
+            var nextY = v_circle.y - mButtonSpacing
+            for(i in 0 until mSubItemList.size ){
+
+                val d = GradientDrawable()
+                d.setColor(circleColor)
+                d.shape = GradientDrawable.OVAL
+
+                ViewCompat.setBackground(mSubItemList[i], d)
+
+                ViewCompat.setElevation(mSubItemList[i], if (subProgress > 0.7f) dipf(context, subProgress * 4f) else 0f)
+
+//                Log.e("Ian","[subProgress] i:$i, result:${(1f - progress) * measuredHeight}, measuredHeight:$measuredHeight , 1f - progress=${1f - subProgress}")
+                mSubItemList[i].y = (1f - subProgress) * measuredHeight + nextY - mSubItemList[i].measuredHeight
+//                Log.e("Ian","[subProgress] subProgress:$subProgress, i:$i, mSubItemList[i].y:${mSubItemList[i].y}")
+                nextY = nextY - mSubItemList[i].measuredHeight - mButtonSpacing
+            }
         }
 
     var isEnabledCell = false
@@ -149,7 +202,10 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
             d.setColor(circleColor)
             d.shape = GradientDrawable.OVAL
             if (Build.VERSION.SDK_INT >= 21 && !isEnabledCell) {
-                fl.background = RippleDrawable(ColorStateList.valueOf(rippleColor), null, d)
+//                fl.background = RippleDrawable(ColorStateList.valueOf(rippleColor), null, d)
+                fl.runAfterDelay(200) {
+                    fl.setBackgroundColor(Color.TRANSPARENT)
+                }
             } else {
                 fl.runAfterDelay(200) {
                     fl.setBackgroundColor(Color.TRANSPARENT)
@@ -161,8 +217,15 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
         set(value) {
             field = value
             iv?.setOnClickListener {
+                Log.e("Ian","iv OnClickListener")
                 onClickListener()
+//                if (right_labels.isExpanded) right_labels.collapse() else right_labels.expand()
             }
+//            right_labels?.setOnClickListener {
+//                Log.e("Ian","right_labels OnClickListener")
+//                onClickListener()
+//                if (right_labels.isExpanded) right_labels.collapse() else right_labels.expand()
+//            }
         }
 
     override lateinit var containerView: View
@@ -189,6 +252,7 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
     private fun initializeView() {
         allowDraw = true
         containerView = LayoutInflater.from(context).inflate(R.layout.meow_navigation_cell, this)
+        mButtonSpacing = dip(context,10)
         draw()
     }
 
@@ -209,6 +273,35 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         progress = progress
+        subProgress = subProgress
+
+        var height = 0
+        mViewWidth = 0
+
+        measureChildren(widthMeasureSpec,heightMeasureSpec)
+
+        for (i in 0..childCount){
+            var child = getChildAt(i)
+//            try {
+//                Log.e("Ian","[onLayout] index:$i, tag:${child.tag}, childCount:$childCount")
+//            }catch (e: Exception){
+//                Log.e("Ian","[onLayout] Exception:$e")
+//            }
+
+            child?.let {
+                if(it.tag != "v_circle")
+                    height += it.measuredHeight
+                if(it.tag == "FrameLayout")
+                    mBaseBlockHeight = it.height
+
+                mViewWidth = max(mViewWidth, it.measuredWidth)
+            }
+        }
+
+        mViewHeight = (height * 1.4f).toInt()
+
+        setMeasuredDimension(widthMeasureSpec,mViewHeight)
+
     }
 
     fun disableCell() {
@@ -237,7 +330,149 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
                 else
                     1f - f
             }
+            addListener(object :Animator.AnimatorListener{
+                override fun onAnimationRepeat(animation: Animator?) {
+                }
+
+                override fun onAnimationEnd(animation: Animator?) {
+                    animateSubProgress(enableCell)
+                }
+
+                override fun onAnimationCancel(animation: Animator?) {
+                }
+
+                override fun onAnimationStart(animation: Animator?) {
+                }
+
+            })
             start()
+        }
+    }
+
+    private fun animateSubProgress(enableCell: Boolean){
+        Log.i("Ian","[animateSubProgress] call. enableCell:$enableCell")
+        val d = if (enableCell) duration else 250
+        val anim = ValueAnimator.ofFloat(0f, 1f)
+        anim.apply {
+            startDelay = if (enableCell) d / 4 else 0L
+            duration = d
+            interpolator = FastOutLinearInInterpolator()
+            addUpdateListener {
+                val f = it.animatedFraction
+                subProgress = if (enableCell)
+                    f
+                else
+                    1f - f
+            }
+            start()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+        super.onLayout(changed, l, t, r, b)
+
+        var buttonsHorizontalCenter = measuredWidth/2
+
+        var nextY = mViewHeight - mBaseBlockHeight - mButtonSpacing
+
+        for (i in 0..childCount){
+            var child = getChildAt(i)
+            try {
+                Log.e("Ian","[onLayout] index:$i, tag:${child.tag}, childCount:$childCount")
+            }catch (e: Exception){
+                Log.e("Ian","[onLayout] Exception:$e")
+            }
+
+            child?.let {
+                Log.e("Ian","[onLayout] index:$i, tag:${child.tag}, childCount:$childCount, measuredWidth:${it.measuredWidth}, measuredHeight:${it.measuredHeight}, mViewWidth:$mViewWidth, buttonsHorizontalCenter:$buttonsHorizontalCenter" )
+//                if(it.tag.toString().contains("FrameLayout")){
+//                    var childX = buttonsHorizontalCenter - it.measuredWidth/2
+//                    var childY = (nextY - it.measuredHeight)
+//                    it.layout(childX,childY,childX+it.measuredWidth,childY+it.measuredHeight)
+//                    Log.e("Ian","[layoutPosition] left:$childX, top:$childY, right:${childX+it.measuredWidth}, bottom:${childY+it.measuredHeight}")
+//                    nextY = (childY - mButtonSpacing)
+//                }
+                if(it.tag.toString().contains("Nav")){
+                    var childX = buttonsHorizontalCenter - it.measuredWidth/2
+                    var childY = (nextY - it.measuredHeight).toInt()
+                    it.layout(childX,childY,childX+it.measuredWidth,childY+it.measuredHeight)
+                    Log.e("Ian","[layoutPosition] left:$childX, top:$childY, right:${childX+it.measuredWidth}, bottom:${childY+it.measuredHeight}")
+                    val collapsedTranslation: Float = fl.y - childY.toFloat()
+                    val expandedTranslation = 0f
+//                    it.translationY = if (mExpanded) expandedTranslation else collapsedTranslation
+//                    it.alpha = if (mExpanded) 1f else 0f
+
+                    //子view的動畫相關
+//                    val params = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams(dip(context,20),dip(context,20)))
+//                    params.mCollapseDir.setFloatValues(expandedTranslation, collapsedTranslation)
+//                    params.mExpandDir.setFloatValues(collapsedTranslation, expandedTranslation)
+//                    it.layoutParams = params
+//                    params.setAnimationsTarget(it)
+                    if(!mSubItemList.contains(it))
+                        mSubItemList.add(it)
+
+                    nextY = (childY - mButtonSpacing)
+                }
+            }
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    class LayoutParams(source: RelativeLayout.LayoutParams?) : RelativeLayout.LayoutParams(source) {
+        public val mExpandDir = ObjectAnimator()
+        public val mExpandAlpha = ObjectAnimator()
+        public val mCollapseDir = ObjectAnimator()
+        public val mCollapseAlpha = ObjectAnimator()
+        private var animationsSetToPlay = false
+        fun setAnimationsTarget(view: View) {
+            mCollapseAlpha.target = view
+            mCollapseDir.target = view
+            mExpandAlpha.target = view
+            mExpandDir.target = view
+            // Now that the animations have targets, set them to be played
+            if (!animationsSetToPlay) {
+                addLayerTypeListener(mExpandDir, view)
+                addLayerTypeListener(mCollapseDir, view)
+                mCollapseAnimation.play(mCollapseAlpha)
+                mCollapseAnimation.play(mCollapseDir)
+                mExpandAnimation.play(mExpandAlpha)
+                mExpandAnimation.play(mExpandDir)
+                animationsSetToPlay = true
+            }
+        }
+
+        private fun addLayerTypeListener(animator: Animator, view: View) {
+            animator.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    view.setLayerType(View.LAYER_TYPE_NONE, null)
+                }
+
+                override fun onAnimationStart(animation: Animator) {
+                    view.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+                }
+            })
+        }
+
+        init {
+            mExpandDir.interpolator = sExpandInterpolator
+            mExpandAlpha.interpolator = sAlphaExpandInterpolator
+            mCollapseDir.interpolator = sCollapseInterpolator
+            mCollapseAlpha.interpolator = sCollapseInterpolator
+            mCollapseAlpha.setProperty(View.ALPHA)
+            mCollapseAlpha.setFloatValues(1f, 0f)
+            mExpandAlpha.setProperty(View.ALPHA)
+            mExpandAlpha.setFloatValues(0f, 1f)
+//            when (mExpandDirection) {
+//                FloatingActionsMenu.EXPAND_UP, FloatingActionsMenu.EXPAND_DOWN -> {
+                    mCollapseDir.setProperty(View.TRANSLATION_Y)
+                    mExpandDir.setProperty(View.TRANSLATION_Y)
+//                }
+//                FloatingActionsMenu.EXPAND_LEFT, FloatingActionsMenu.EXPAND_RIGHT -> {
+//                    mCollapseDir.setProperty(View.TRANSLATION_X)
+//                    mExpandDir.setProperty(View.TRANSLATION_X)
+//                }
+//            }
         }
     }
 }
