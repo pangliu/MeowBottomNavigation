@@ -28,6 +28,7 @@
             android:layout_gravity="center"
             android:padding="10dp"
             app:meow_imageview_size="20dp"
+            android:background="@drawable/meow_cell_circle"
             android:tag="iv"/>
 
         <TextView

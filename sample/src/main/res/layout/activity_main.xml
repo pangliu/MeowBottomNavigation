@@ -5,7 +5,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/colorPrimary"
+        android:background="#ededed"
         android:orientation="vertical">
 
         <LinearLayout
@@ -43,7 +43,7 @@
             app:mbn_defaultIconColor="#90a4ae"
             app:mbn_rippleColor="#2f424242"
             app:mbn_selectedIconColor="#424242"
-            app:mbn_shadowColor="#1f212121" />
+            app:mbn_shadowColor="#00212121" />
 
     </FrameLayout>
 

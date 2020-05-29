@@ -161,7 +161,8 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
 
             val d = GradientDrawable()
             d.setColor(circleColor)
-            d.shape = GradientDrawable.OVAL
+//            d.shape = GradientDrawable.OVAL
+            d.shape = GradientDrawable.RING
 
             ViewCompat.setBackground(v_circle, d)
 
@@ -182,7 +183,8 @@ class MeowBottomNavigationCell : RelativeLayout, LayoutContainer {
 
                 val d = GradientDrawable()
                 d.setColor(circleColor)
-                d.shape = GradientDrawable.OVAL
+//                d.shape = GradientDrawable.OVAL
+                d.shape = GradientDrawable.RING
 
                 ViewCompat.setBackground(mSubItemList[i], d)
 
